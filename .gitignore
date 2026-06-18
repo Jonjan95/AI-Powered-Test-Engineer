@@ -1,0 +1,25 @@
+# Private project context
+AI-Powered-Test-Engineer-Private/
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
+
+# Node
+node_modules/
+
+# Next.js
+.next/
+
+# Java
+target/
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
