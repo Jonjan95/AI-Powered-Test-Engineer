@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: ai-powered-test-engineer-backend
+
+# PostgreSQL will be configured in a later issue when persistence is introduced.
+# Keep these values in environment variables and never commit real secrets.
+#
+# spring:
+#   datasource:
+#     url: ${DATABASE_URL}
+#     username: ${DATABASE_USERNAME}
+#     password: ${DATABASE_PASSWORD}
