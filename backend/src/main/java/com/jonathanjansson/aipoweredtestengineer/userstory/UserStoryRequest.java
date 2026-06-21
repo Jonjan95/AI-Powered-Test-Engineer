@@ -1,0 +1,11 @@
+package com.jonathanjansson.aipoweredtestengineer.userstory;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record UserStoryRequest(
+        @NotBlank @Size(max = 255) String title,
+        String description,
+        String acceptanceCriteria
+) {
+}
