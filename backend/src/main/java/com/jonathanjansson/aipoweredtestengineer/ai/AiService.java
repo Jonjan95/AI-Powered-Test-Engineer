@@ -14,4 +14,8 @@ public class AiService {
     public GeneratedTestCaseBatch generateTestCases(AiUserStory userStory) {
         return aiClient.generateTestCases(userStory);
     }
+
+    public GeneratedPlaywrightTest generatePlaywrightTest(AiPlaywrightRequest request) {
+        return aiClient.generatePlaywrightTest(request);
+    }
 }

@@ -40,4 +40,26 @@ class AiServiceTest {
         assertEquals(generatedTestCases, result);
         verify(aiClient).generateTestCases(userStory);
     }
+
+    @Test
+    void generatePlaywrightTestDelegatesToAiClient() {
+        AiPlaywrightRequest request = new AiPlaywrightRequest(
+                new AiUserStory("Login", "Users can log in", "Valid credentials work"),
+                List.of(new AiTestCase(
+                        "Successful login",
+                        "Registered user",
+                        "Enter valid credentials",
+                        "Dashboard is displayed",
+                        "FUNCTIONAL"
+                ))
+        );
+        GeneratedPlaywrightTest generated = new GeneratedPlaywrightTest(
+                "login.spec.ts",
+                "import { test, expect } from '@playwright/test';"
+        );
+        when(aiClient.generatePlaywrightTest(request)).thenReturn(generated);
+
+        assertEquals(generated, aiService.generatePlaywrightTest(request));
+        verify(aiClient).generatePlaywrightTest(request);
+    }
 }

@@ -53,6 +53,46 @@ class OpenAiClientTest {
     }
 
     @Test
+    void parsesStructuredPlaywrightTest() throws Exception {
+        OpenAiClient client = createClient(new OpenAiProperties());
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        GeneratedPlaywrightTest generated = client.parsePlaywrightResponse(objectMapper.readTree("""
+                {
+                  "output": [{
+                    "content": [{
+                      "type": "output_text",
+                      "text": "{\\\"fileName\\\":\\\"login.spec.ts\\\",\\\"scriptContent\\\":\\\"import { test, expect } from '@playwright/test';\\\"}"
+                    }]
+                  }]
+                }
+                """));
+
+        assertEquals("login.spec.ts", generated.fileName());
+        assertTrue(generated.scriptContent().contains("@playwright/test"));
+    }
+
+    @Test
+    void rejectsUnsafePlaywrightFileName() throws Exception {
+        OpenAiClient client = createClient(new OpenAiProperties());
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        assertThrows(
+                AiGenerationException.class,
+                () -> client.parsePlaywrightResponse(objectMapper.readTree("""
+                        {
+                          "output": [{
+                            "content": [{
+                              "type": "output_text",
+                              "text": "{\\\"fileName\\\":\\\"../login.spec.ts\\\",\\\"scriptContent\\\":\\\"test('login', () => {});\\\"}"
+                            }]
+                          }]
+                        }
+                        """))
+        );
+    }
+
+    @Test
     void rejectsRefusalResponse() throws Exception {
         OpenAiClient client = createClient(new OpenAiProperties());
         ObjectMapper objectMapper = new ObjectMapper();
