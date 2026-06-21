@@ -11,7 +11,7 @@ public class AiService {
         this.aiClient = aiClient;
     }
 
-    public String generateTestCases(String userStory) {
+    public GeneratedTestCaseBatch generateTestCases(AiUserStory userStory) {
         return aiClient.generateTestCases(userStory);
     }
 }

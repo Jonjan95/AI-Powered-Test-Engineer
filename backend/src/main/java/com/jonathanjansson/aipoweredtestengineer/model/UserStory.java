@@ -8,11 +8,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -38,6 +42,9 @@ public class UserStory {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    @OneToMany(mappedBy = "userStory")
+    private List<TestCase> testCases = new ArrayList<>();
 
     protected UserStory() {
     }
@@ -82,5 +89,9 @@ public class UserStory {
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public List<TestCase> getTestCases() {
+        return Collections.unmodifiableList(testCases);
     }
 }

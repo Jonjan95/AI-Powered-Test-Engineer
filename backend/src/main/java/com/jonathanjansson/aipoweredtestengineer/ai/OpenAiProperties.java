@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 public class OpenAiProperties {
 
     private String apiKey = "";
+    private String model = "gpt-5.5";
+    private String baseUrl = "https://api.openai.com/v1";
 
     public String getApiKey() {
         return apiKey;
@@ -15,6 +17,22 @@ public class OpenAiProperties {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     public boolean hasApiKey() {
