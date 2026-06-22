@@ -193,7 +193,12 @@ OPENAI_API_KEY=
 DATABASE_URL=
 DATABASE_USERNAME=
 DATABASE_PASSWORD=
+FRONTEND_ORIGIN=http://localhost:3000
 ```
+
+`FRONTEND_ORIGIN` controls which frontend origin may call the backend API. It defaults to
+`http://localhost:3000` for local development and should be set to the deployed frontend URL in
+other environments.
 
 Environment files should be ignored by Git using:
 
