@@ -1,259 +1,191 @@
 # Setup Guide
 
-## Overview
+This guide describes the first-time local setup for the AI-Powered Test Engineer project. For the shorter daily startup sequence, see [quick-start.md](quick-start.md).
 
-This document describes how to set up the AI-Powered Test Engineer development environment.
+## Prerequisites
 
-The project is currently in the planning and architecture phase, therefore some setup steps will be added as the project evolves.
+Install the following tools:
 
----
+- Git 2.40 or later
+- Java 21 LTS
+- Node.js 22 LTS with npm
+- Docker Desktop
+- Visual Studio Code or another editor
 
-## Development Environment
+The project uses the included Maven Wrapper, so a separate Maven installation is optional.
 
-Recommended tools:
-
-### Git
-
-Used for version control.
-
-Recommended version:
-
-* Git 2.40+
-
-### Java
-
-Backend development.
-
-Recommended version:
-
-* Java 21 LTS
-
-Verify installation:
+Verify the command-line tools:
 
 ```bash
+git --version
 java --version
-```
-
-### Maven
-
-Backend dependency management.
-
-Verify installation:
-
-```bash
-mvn --version
-```
-
-### Node.js
-
-Frontend development.
-
-Recommended version:
-
-* Node.js 22 LTS
-
-Verify installation:
-
-```bash
 node --version
 npm --version
+docker --version
 ```
 
-### PostgreSQL
-
-Database system.
-
-Recommended version:
-
-* PostgreSQL 16+
-
-Verify installation:
-
-```bash
-psql --version
-```
-
-### Visual Studio Code
-
-Recommended editor.
-
-Suggested extensions:
-
-* Java Extension Pack
-* Spring Boot Extension Pack
-* ESLint
-* Prettier
-* Playwright Test for VS Code
-* GitHub Copilot
-* GitHub Pull Requests and Issues
-
----
-
-## Clone Repository
-
-Clone the repository:
+## Clone the Repository
 
 ```bash
 git clone https://github.com/Jonjan95/AI-Powered-Test-Engineer.git
-```
-
-Navigate to the project:
-
-```bash
 cd AI-Powered-Test-Engineer
 ```
-
-Open in VS Code:
-
-```bash
-code .
-```
-
----
 
 ## Project Structure
 
 ```text
 AI-Powered-Test-Engineer/
-├── .github/
-│   └── workflows/
-├── backend/
-├── docs/
-├── frontend/
-├── tests/
-├── .gitignore
-├── LICENSE
-└── README.md
+|-- backend/       Spring Boot application and Flyway migrations
+|-- docs/          Project documentation
+|-- frontend/      Next.js application and Playwright tests
+|-- tests/         Reserved top-level test area
+`-- README.md
 ```
 
----
+## PostgreSQL with Docker
+
+Local development is standardized on PostgreSQL 16.
+
+Create the container once:
+
+```bash
+docker run --name aipowered-postgres -e POSTGRES_USER=aipower -e POSTGRES_PASSWORD=123 -e POSTGRES_DB=aipowered -p 5432:5432 -d postgres:16
+```
+
+On later days, start the existing container:
+
+```bash
+docker start aipowered-postgres
+```
+
+Verify it is running:
+
+```bash
+docker ps
+docker logs aipowered-postgres
+```
+
+The username and password above are local development defaults only. Use environment-specific secrets outside local development.
 
 ## Backend Setup
 
-Planned location:
+The backend defaults match the Docker container above. Start it from `backend/`.
 
-```text
-backend/
+Windows PowerShell:
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
 ```
 
-Planned technologies:
+macOS or Linux:
 
-* Java
-* Spring Boot
-* Maven
-* PostgreSQL
+```bash
+cd backend
+./mvnw spring-boot:run
+```
 
-Setup instructions will be added during Phase 2.
+Flyway applies pending migrations at startup. Hibernate uses `ddl-auto: validate`, so it validates the migrated schema instead of creating it.
 
----
+Verify the backend at `http://localhost:8080/api/health`.
 
 ## Frontend Setup
 
-Planned location:
+Open another terminal and install dependencies:
 
-```text
-frontend/
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-Planned technologies:
+Open `http://localhost:3000`. The current page requests the backend health endpoint at `http://localhost:8080/api/health`.
 
-* Next.js
-* TypeScript
-* Tailwind CSS
+## Playwright Setup
 
-Setup instructions will be added during Phase 3.
+Install the browser binaries after installing frontend dependencies:
 
----
+```bash
+cd frontend
+npx playwright install
+```
 
-## Testing Setup
+Run the current Playwright suite with:
 
-Planned testing technologies:
+```bash
+npx playwright test
+```
 
-### Backend
-
-* JUnit
-* Mockito
-
-### Frontend
-
-* Playwright
-
-Setup instructions will be added during later phases.
-
----
+The current suite contains Playwright starter examples that visit `playwright.dev`. It is not yet an end-to-end suite for this application. Generated Playwright code from the backend is stored in PostgreSQL; it is not automatically copied into `frontend/tests` or executed.
 
 ## Environment Variables
 
-Secrets must never be committed to Git.
+The backend reads these variables:
 
-Examples:
+| Variable | Required | Local default | Purpose |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | No | `jdbc:postgresql://localhost:5432/aipowered` | JDBC connection URL |
+| `DATABASE_USERNAME` | No | `aipower` | PostgreSQL username |
+| `DATABASE_PASSWORD` | No | `123` | PostgreSQL password for local development |
+| `OPENAI_API_KEY` | Yes for generation | Empty | Authenticates OpenAI generation requests |
+| `OPENAI_MODEL` | No | `gpt-5.5` | Selects the model used for generation |
+| `FRONTEND_ORIGIN` | No | `http://localhost:3000` | Single browser origin allowed to call `/api/**` |
 
-```env
-OPENAI_API_KEY=
-DATABASE_URL=
-DATABASE_USERNAME=
-DATABASE_PASSWORD=
-FRONTEND_ORIGIN=http://localhost:3000
+The health and CRUD endpoints work without an OpenAI key. Test-case and Playwright-code generation require `OPENAI_API_KEY`.
+
+PowerShell example for the current terminal:
+
+```powershell
+$env:OPENAI_API_KEY="your-api-key"
+$env:OPENAI_MODEL="gpt-5.5"
+$env:FRONTEND_ORIGIN="http://localhost:3000"
 ```
 
-`FRONTEND_ORIGIN` controls which frontend origin may call the backend API. It defaults to
-`http://localhost:3000` for local development and should be set to the deployed frontend URL in
-other environments.
+bash example for the current terminal:
 
-Environment files should be ignored by Git using:
-
-```text
-.env
-.env.local
+```bash
+export OPENAI_API_KEY="your-api-key"
+export OPENAI_MODEL="gpt-5.5"
+export FRONTEND_ORIGIN="http://localhost:3000"
 ```
 
----
+Never commit real secrets. `.env` and `.env.*` files are ignored by the repository, but Spring Boot does not automatically load a root `.env` file; export variables in the shell or configure them in your run environment.
 
-## Cloud Setup
+## Running Backend Tests
 
-Planned cloud platform:
+Windows:
 
-* Microsoft Azure
+```powershell
+cd backend
+.\mvnw.cmd test
+```
 
-Future deployment targets:
+macOS or Linux:
 
-* Azure App Service
-* Azure PostgreSQL
-* Azure OpenAI
-* Azure Monitor
+```bash
+cd backend
+./mvnw test
+```
 
-Deployment instructions will be added in later phases.
+## Useful Endpoints
 
----
+- Frontend: `http://localhost:3000`
+- Backend health: `http://localhost:8080/api/health`
+- Backend API base: `http://localhost:8080/api`
 
-## Development Workflow
+See [api-reference.md](api-reference.md) for the complete implemented API.
 
-Development follows:
+## Shutdown
 
-1. Create GitHub Issue
-2. Create Feature Branch
-3. Implement Feature
-4. Commit Changes
-5. Open Pull Request
-6. Review Changes
-7. Merge to Main
+Stop the frontend and backend with `Ctrl+C` in their terminals. Stop PostgreSQL with:
 
-AI-generated code should always be reviewed before being committed.
+```bash
+docker stop aipowered-postgres
+```
 
----
+## Troubleshooting
 
-## Current Status
-
-Current phase:
-
-Phase 1 - Project Foundation
-
-Focus areas:
-
-* Documentation
-* Architecture
-* Requirements
-* Development workflow
-* GitHub setup
-
-No application code has been implemented yet.
+- If the backend cannot connect, confirm Docker Desktop and `aipowered-postgres` are running.
+- If port 5432 is busy, stop the other PostgreSQL service or configure a different port and `DATABASE_URL`.
+- If generation returns an upstream error, confirm `OPENAI_API_KEY` is set in the backend process.
+- If browser API requests fail because of CORS, confirm `FRONTEND_ORIGIN` exactly matches the frontend origin, including scheme and port.

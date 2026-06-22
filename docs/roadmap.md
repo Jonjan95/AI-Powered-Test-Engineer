@@ -1,98 +1,74 @@
 # Roadmap
 
+This roadmap distinguishes completed foundation work from the remaining product phases. A checked item is implemented in the current repository; an unchecked item is planned.
+
 ## Phase 1 - Project Foundation
 
-Goal: Establish a clean and professional project foundation.
+- [x] Create the repository and project structure
+- [x] Define the project vision, requirements, architecture, and roadmap
+- [x] Add setup and development documentation
+- [x] Establish the GitHub issue and review workflow
 
-* Create GitHub repository
-* Define project structure
-* Create README
-* Create documentation
-* Define project vision
-* Define requirements
-* Define architecture
-* Prepare private AI context for Codex
+## Phase 2 - Backend and Database Foundation
 
-## Phase 2 - Backend Foundation
-
-Goal: Create the backend foundation using Java and Spring Boot.
-
-* Create Spring Boot project
-* Configure project structure
-* Add basic health check endpoint
-* Add PostgreSQL configuration
-* Add initial domain models
-* Add JUnit and Mockito setup
+- [x] Create the Java 21 Spring Boot application
+- [x] Add the health endpoint
+- [x] Configure PostgreSQL and Spring Data JPA
+- [x] Manage the schema with Flyway
+- [x] Add project CRUD
+- [x] Add user-story CRUD scoped to projects
+- [x] Add JUnit, Mockito, and MockMvc tests
+- [x] Configure browser CORS for the frontend origin
+- [ ] Add database migration and repository integration tests
+- [ ] Add a consistent API error contract and API schema documentation
 
 ## Phase 3 - Frontend Foundation
 
-Goal: Create the frontend foundation using Next.js and TypeScript.
+- [x] Create the Next.js and TypeScript application
+- [x] Configure Tailwind CSS
+- [x] Connect the initial page to backend health
+- [x] Install and configure the Playwright dependency
+- [ ] Add application navigation and reusable UI structure
+- [ ] Add project and user-story management screens
+- [ ] Add generated-asset review screens
 
-* Create Next.js application
-* Configure TypeScript
-* Configure Tailwind CSS
-* Create basic layout
-* Create navigation
-* Connect frontend to backend health endpoint
+## Phase 4 - AI Test Generation
 
-## Phase 4 - Core Platform Features
+- [x] Add an OpenAI client abstraction and configuration
+- [x] Generate structured test cases from user stories
+- [x] Store and retrieve generated test cases
+- [ ] Generate dedicated edge-case analysis
+- [ ] Generate risk analysis
+- [ ] Generate reusable test data
 
-Goal: Build the basic platform features.
+## Phase 5 - Playwright Code Generation
 
-* Create projects
-* Create user stories
-* Store requirements
-* Display generated test assets
-* Manage generated test cases
+- [x] Generate structured Playwright TypeScript code from stored test cases
+- [x] Validate and store generated filenames and script content
+- [x] Retrieve stored Playwright tests through the API
+- [ ] Display and review generated code in the frontend
+- [ ] Export approved generated code to a runnable test workspace
 
-## Phase 5 - AI Test Generation
+## Phase 6 - Automated Test Execution
 
-Goal: Integrate AI functionality.
+Generated Playwright tests are not currently executed.
 
-* Connect backend to OpenAI API
-* Generate test cases from user stories
-* Generate edge cases
-* Generate risk analysis
-* Generate test data
-* Store AI-generated results
+- [ ] Execute approved Playwright tests safely
+- [ ] Capture status, duration, output, and errors
+- [ ] Store test execution history
+- [ ] Display pass/fail results and reports
 
-## Phase 6 - Playwright Integration
+## Phase 7 - AI Failure Analysis
 
-Goal: Add end-to-end test generation.
+- [ ] Analyze failed test output
+- [ ] Suggest possible root causes
+- [ ] Recommend test or application improvements
+- [ ] Display AI-generated explanations
 
-* Generate Playwright test scripts
-* Store generated Playwright tests
-* Display generated code in the UI
-* Allow users to review generated tests
+## Phase 8 - Delivery and Cloud
 
-## Phase 7 - Automated Test Execution
-
-Goal: Execute generated tests and collect results.
-
-* Run Playwright tests
-* Capture test results
-* Store execution history
-* Display pass/fail status
-* Generate basic reports
-
-## Phase 8 - AI Failure Analysis
-
-Goal: Use AI to analyze failed test results.
-
-* Analyze failed Playwright test output
-* Suggest possible root causes
-* Recommend improvements
-* Display AI-generated explanations
-
-## Phase 9 - Cloud and CI/CD
-
-Goal: Deploy the project and automate the development workflow.
-
-* Add GitHub Actions
-* Run backend tests automatically
-* Run frontend checks automatically
-* Add Docker support
-* Deploy backend to Azure
-* Deploy frontend
-* Configure cloud database
-* Prepare production documentation
+- [ ] Add GitHub Actions quality checks
+- [ ] Add application containerization
+- [ ] Prepare production configuration and secret management
+- [ ] Deploy the backend, frontend, and PostgreSQL infrastructure
+- [ ] Add monitoring and operational documentation

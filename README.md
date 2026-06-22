@@ -1,181 +1,92 @@
 # AI-Powered Test Engineer
 
-AI-Powered Test Engineer is a project focused on modern software development, test automation, artificial intelligence, and cloud technologies.
+AI-Powered Test Engineer is a full-stack learning project exploring how artificial intelligence can support the software testing lifecycle. The current application can manage projects and user stories, generate structured test cases with the OpenAI API, and generate and store Playwright TypeScript test code.
 
-The goal of the project is to explore how AI can assist developers and QA engineers throughout the software testing lifecycle by generating test cases, identifying edge cases, creating Playwright automation scripts, and analyzing failed test executions.
+> Generated Playwright tests are currently stored in PostgreSQL for review. The application does not yet write them to the frontend test suite or execute them.
 
----
+## Implemented Features
 
-## Project Vision
-
-Software teams spend a significant amount of time creating and maintaining:
-
-* Test cases
-* Edge cases
-* Test data
-* Automated tests
-* Test reports
-* Failure analysis
-
-AI-Powered Test Engineer aims to reduce that effort by leveraging AI to support developers and testers throughout the testing process.
-
-The long-term vision is to build a platform capable of:
-
-1. Understanding user stories and requirements
-2. Generating test cases and edge cases
-3. Generating Playwright test scripts
-4. Executing automated tests
-5. Analyzing failures using AI
-6. Providing actionable recommendations
-
----
+- Spring Boot REST API with a health endpoint
+- Project CRUD operations
+- User story CRUD operations scoped to projects
+- AI-generated test cases stored per user story
+- AI-generated Playwright test code stored per user story
+- PostgreSQL persistence managed with Flyway migrations
+- Configurable frontend CORS origin
+- Backend unit and controller tests with JUnit, Mockito, and MockMvc
+- Next.js health-status page connected to the backend
+- Playwright installed in the frontend with starter example tests
 
 ## Planned Features
 
-### Test Case Generation
+- Project and user story management in the frontend
+- Display and review of generated test cases and Playwright code
+- Edge-case, risk, and test-data generation
+- Execution of generated Playwright tests
+- Test result history and reporting
+- AI-assisted failure analysis
+- Authentication, CI/CD, containerization, and Azure deployment
 
-Generate structured test cases from user stories and requirements.
+## Technology Stack
 
-### Edge Case Detection
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS
+- **Backend:** Java 21, Spring Boot, Spring Data JPA
+- **Database:** PostgreSQL 16, Flyway
+- **AI:** OpenAI Responses API
+- **Testing:** JUnit, Mockito, MockMvc, Playwright
+- **Planned operations:** GitHub Actions, Docker, Microsoft Azure
 
-Identify potential edge cases and overlooked scenarios.
-
-### Risk Analysis
-
-Analyze requirements and highlight potential risk areas.
-
-### Test Data Generation
-
-Generate realistic and reusable test data.
-
-### Playwright Test Generation
-
-Generate Playwright end-to-end test scripts from generated test cases.
-
-### Automated Test Execution
-
-Run generated Playwright tests and collect results.
-
-### AI Failure Analysis
-
-Analyze failed test executions and suggest possible root causes.
-
-### Reporting Dashboard
-
-Provide visibility into generated tests, execution results, and AI recommendations.
-
----
-
-## Tech Stack
-
-### Frontend
-
-* Next.js
-* TypeScript
-* Tailwind CSS
-
-### Backend
-
-* Java
-* Spring Boot
-
-### Database
-
-* PostgreSQL
-
-### AI
-
-* OpenAI API
-
-### Testing
-
-* JUnit
-* Mockito
-* Playwright
-
-### DevOps
-
-* Git
-* GitHub
-* GitHub Actions
-* Docker
-
-### Cloud
-
-* Microsoft Azure
-
----
-
-## Architecture
-
-High-Level Architecture:
+## Current Architecture
 
 ```text
-Frontend (Next.js)
-        |
-        v
-Backend API (Spring Boot)
-        |
-        +--> PostgreSQL
-        |
-        +--> OpenAI API
-        |
-        +--> Playwright Test Runner
+Browser
+  |
+  v
+Next.js frontend (health page)
+  |
+  v
+Spring Boot REST API
+  |-- PostgreSQL (projects, user stories, generated assets)
+  `-- OpenAI API (test-case and Playwright-code generation)
 ```
 
-The platform follows a service-oriented architecture with a clear separation between presentation, business logic, AI integrations, and automated testing components.
-
----
-
-## Development Goals
-
-This project is also intended as a learning platform for:
-
-* Professional Git workflows
-* Feature branches and pull requests
-* Code reviews
-* Test automation
-* CI/CD pipelines
-* Cloud deployment
-* AI-assisted software development
-* Modern software architecture
-
----
+The backend uses feature-oriented packages with controllers, services, DTOs, entities, and Spring Data repositories. Flyway owns schema changes, while Hibernate validates that the entity mappings match the migrated schema.
 
 ## Project Structure
 
 ```text
 AI-Powered-Test-Engineer/
-├── .github/
-│   └── workflows/
-├── backend/
-├── docs/
-├── frontend/
-├── tests/
-├── .gitignore
-├── LICENSE
-└── README.md
+|-- backend/       Spring Boot API, migrations, and backend tests
+|-- docs/          Project and developer documentation
+|-- frontend/      Next.js application and Playwright setup
+|-- tests/         Reserved top-level test area
+|-- .github/       GitHub configuration
+`-- README.md
 ```
 
----
+## Getting Started
+
+For first-time installation and environment configuration, see [docs/setup.md](docs/setup.md).
+
+For the normal development startup sequence and test commands, see [docs/quick-start.md](docs/quick-start.md).
 
 ## Documentation
 
-Additional project documentation can be found in the `docs` directory:
-
-* project-vision.md
-* requirements.md
-* roadmap.md
-* architecture.md
-* setup.md
-
----
+- [Setup guide](docs/setup.md)
+- [Quick start](docs/quick-start.md)
+- [API reference](docs/api-reference.md)
+- [Architecture](docs/architecture.md)
+- [Database design](docs/database-design.md)
+- [Requirements](docs/requirements.md)
+- [Roadmap](docs/roadmap.md)
+- [Project vision](docs/project-vision.md)
+- [Future ideas](docs/future-ideas.md)
 
 ## Current Status
 
-🚧 Project currently in planning and architecture phase.
+Issues #1-#9 established the project structure, backend and database foundations, project and user-story APIs, OpenAI integration, AI test-case generation, stored Playwright-code generation, frontend foundation, Playwright dependency setup, and frontend CORS configuration.
 
----
+The backend foundation is functional. The frontend is still a minimal health-check page, and automated execution of generated tests has not been implemented.
 
 ## Author
 

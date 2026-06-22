@@ -2,231 +2,114 @@
 
 ## Overview
 
-AI-Powered Test Engineer is designed as a full-stack application that combines software testing, artificial intelligence, automation, and cloud technologies.
+AI-Powered Test Engineer currently consists of a Next.js frontend, a Spring Boot REST API, PostgreSQL persistence, and an OpenAI integration. The implemented system manages projects and user stories and stores AI-generated test cases and Playwright code.
 
-The system will allow users to create projects, define requirements and user stories, generate test assets using AI, create Playwright automation scripts, execute tests, and analyze test failures.
+Automated execution, result storage, reporting, and AI failure analysis remain planned capabilities.
 
-The architecture is intentionally designed to resemble a modern software system used in professional environments.
-
----
-
-## High-Level Architecture
+## Implemented Architecture
 
 ```text
-User
- |
- v
-Frontend (Next.js)
- |
- v
-Backend API (Spring Boot)
- |
- +--> PostgreSQL Database
- |
- +--> OpenAI API
- |
- +--> Playwright Test Runner
+User's browser
+      |
+      v
+Next.js frontend :3000
+      |
+      | HTTP/JSON to /api/**
+      v
+Spring Boot backend :8080
+      |
+      |-- Controllers -> Services -> Spring Data repositories
+      |                           |
+      |                           v
+      |                     PostgreSQL 16
+      |                     (Flyway schema)
+      |
+      `-- AI service -> OpenAI Responses API
+                        (generation requests)
 ```
 
----
+The frontend origin permitted by backend CORS is configured with `FRONTEND_ORIGIN`. The local default is `http://localhost:3000`.
 
-## Frontend Layer
+## Frontend
 
-Technology:
+The frontend uses Next.js, React, TypeScript, and Tailwind CSS. Its current responsibility is limited to displaying backend health information.
 
-* Next.js
-* TypeScript
-* Tailwind CSS
+Planned frontend responsibilities include:
 
-Responsibilities:
+- Project and user-story management
+- Starting generation requests
+- Reviewing generated test cases and Playwright code
+- Displaying future execution results and failure analysis
 
-* User interface
-* Project management
-* User story management
-* Display generated test cases
-* Display generated Playwright tests
-* Display test execution results
-* Display AI-generated analysis
+Business rules and persistence remain backend responsibilities.
 
-The frontend should contain as little business logic as possible.
+## Backend
 
-Business rules should be handled by the backend.
+The backend uses feature-oriented packages:
 
----
+- `health` exposes service status.
+- `project` manages project CRUD.
+- `userstory` manages project-scoped user stories.
+- `testcase` generates and retrieves test cases.
+- `playwright` generates and retrieves Playwright code.
+- `ai` isolates OpenAI configuration, requests, and structured response parsing.
+- `model` and `repository` provide JPA persistence.
+- `config` contains cross-origin configuration.
 
-## Backend Layer
+Controllers handle HTTP mapping and validation. Services coordinate business operations and transactions. Request and response records keep API models separate from JPA entities.
 
-Technology:
+## Database
 
-* Java
-* Spring Boot
+PostgreSQL stores projects, user stories, generated test cases, and generated Playwright tests. Flyway applies versioned migrations, and Hibernate validates entity-to-schema compatibility at startup.
 
-Responsibilities:
+Foreign keys use cascading deletion so deleting a project removes its user stories and their generated records. See [database-design.md](database-design.md) for the implemented schema.
 
-* REST API
-* Business logic
-* Database access
-* OpenAI integration
-* Playwright integration
-* Validation
-* Authentication (future)
+## AI Generation
 
-The backend acts as the central component of the system.
+The backend sends user-story data to the OpenAI Responses API and requests strict structured JSON. Generated test cases are validated through the response schema and persisted. Playwright generation uses the user story plus all stored test cases and validates the returned filename before persistence.
 
-All requests should flow through the backend.
+Generation requires `OPENAI_API_KEY`. The application treats user-supplied requirements as data in its AI instructions to reduce prompt-injection risk.
 
----
+## Playwright: Generation Versus Execution
 
-## Database Layer
+Two separate Playwright-related capabilities must not be confused:
 
-Technology:
+1. **Implemented:** The backend generates a filename and TypeScript `scriptContent`, then stores both in PostgreSQL.
+2. **Not implemented:** The application does not write that content to disk, approve it, sandbox it, run it, or store execution results.
 
-* PostgreSQL
+The frontend repository also contains an independent Playwright starter configuration and example tests against `playwright.dev`. Those examples are not connected to backend-generated tests.
 
-The database will store:
+## Current Generation Flow
 
-### Projects
+```text
+Create project
+  -> Create user story
+  -> Generate and store test cases through OpenAI
+  -> Generate and store Playwright code through OpenAI
+  -> Retrieve stored assets through the API
+```
 
-Information about testing projects.
+## Planned Execution Architecture
 
-### User Stories
+A future execution layer will require an explicit approval boundary and isolated runner:
 
-Requirements and feature descriptions.
+```text
+Stored Playwright code
+  -> Review and approval
+  -> Isolated Playwright runner
+  -> Execution results
+  -> PostgreSQL history
+  -> Optional AI failure analysis
+```
 
-### Test Cases
-
-Generated AI test cases.
-
-### Edge Cases
-
-Generated edge cases.
-
-### Risk Analysis
-
-Generated risk assessments.
-
-### Playwright Tests
-
-Generated automation scripts.
-
-### Test Results
-
-Execution results and history.
-
----
-
-## AI Integration Layer
-
-Technology:
-
-* OpenAI API
-
-The AI layer will be responsible for:
-
-### Test Case Generation
-
-Generate structured test cases.
-
-### Edge Case Generation
-
-Generate additional testing scenarios.
-
-### Risk Analysis
-
-Identify potential risks and vulnerabilities.
-
-### Test Data Generation
-
-Generate realistic testing data.
-
-### Playwright Generation
-
-Generate Playwright test scripts.
-
-### Failure Analysis
-
-Analyze failed test executions and provide explanations.
-
----
-
-## Playwright Layer
-
-Technology:
-
-* Playwright
-
-Responsibilities:
-
-* Store generated tests
-* Execute tests
-* Capture results
-* Return execution reports
-
-Long-term workflow:
-
-1. User submits a user story
-2. AI generates test cases
-3. AI generates Playwright tests
-4. Playwright executes tests
-5. Results are stored
-6. AI analyzes failures
-
----
-
-## Cloud Architecture
-
-Planned Cloud Platform:
-
-* Microsoft Azure
-
-Potential Services:
-
-### Azure App Service
-
-Host backend and frontend.
-
-### Azure Database for PostgreSQL
-
-Managed PostgreSQL database.
-
-### Azure OpenAI
-
-Future AI integration option.
-
-### Azure Monitor
-
-Monitoring and logging.
-
-### Azure Container Registry
-
-Container management.
-
----
-
-## Development Workflow
-
-The project follows a professional development workflow:
-
-* GitHub Issues
-* Feature Branches
-* Pull Requests
-* Code Reviews
-* GitHub Actions
-* Continuous Integration
-
-AI tools such as Codex are used as development assistants, but all generated code should be reviewed and understood before being merged.
-
----
+Generated code must not be executed directly inside the Spring Boot API process. Runner isolation, target allow-listing, resource limits, secret handling, and auditability should be designed before execution is added.
 
 ## Future Architecture Considerations
 
-Potential future additions:
-
-* User authentication
-* Team collaboration
-* Multi-project support
-* Test execution scheduling
-* Docker deployment
-* Kubernetes deployment
-* Azure DevOps integration
-* Multiple AI providers
+- Authentication and authorization
+- API versioning and a stable error contract
+- Pagination for collection endpoints
+- Background jobs for long-running AI and test operations
+- Multiple AI providers
+- CI/CD and container deployment
+- Azure hosting, managed PostgreSQL, and monitoring

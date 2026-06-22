@@ -2,182 +2,126 @@
 
 ## Overview
 
-The database is responsible for storing projects, requirements, generated test assets, Playwright scripts, and execution results.
+PostgreSQL 16 is the supported local database version. Flyway migrations in `backend/src/main/resources/db/migration` define the schema, and Hibernate validates the JPA mappings at application startup.
 
-PostgreSQL will be used as the primary database.
+This document separates tables that exist now from entities planned for later phases.
 
----
-
-# Entity Relationship Overview
+## Implemented Relationship Model
 
 ```text
-Project
- |
- +-- UserStory
-        |
-        +-- TestCase
-        |
-        +-- EdgeCase
-        |
-        +-- RiskAnalysis
-        |
-        +-- PlaywrightTest
-                |
-                +-- TestExecution
+projects
+  `-- user_stories
+        |-- test_cases
+        `-- playwright_tests
+
+test_record (legacy foundation scaffold; independent)
 ```
 
----
+Deleting a project cascades to its user stories. Deleting a user story cascades to its test cases and Playwright tests.
 
-# Project
+## Implemented Tables
 
-Represents a testing project.
+### `projects`
 
-## Fields
+Stores a testing project.
 
-| Field       | Type      |
-| ----------- | --------- |
-| id          | UUID      |
-| name        | String    |
-| description | String    |
-| createdAt   | Timestamp |
-| updatedAt   | Timestamp |
+| Column | Type | Constraints |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `name` | VARCHAR(255) | Not null |
+| `description` | TEXT | Nullable |
+| `created_at` | TIMESTAMP WITH TIME ZONE | Not null |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | Not null |
 
----
+### `user_stories`
 
-# UserStory
+Stores a requirement belonging to a project.
 
-Represents a user story or requirement.
+| Column | Type | Constraints |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `project_id` | UUID | Not null; foreign key to `projects.id` with cascade delete |
+| `title` | VARCHAR(255) | Not null |
+| `description` | TEXT | Nullable |
+| `acceptance_criteria` | TEXT | Nullable |
+| `created_at` | TIMESTAMP WITH TIME ZONE | Not null |
 
-## Fields
+An index exists on `project_id`.
 
-| Field              | Type      |
-| ------------------ | --------- |
-| id                 | UUID      |
-| projectId          | UUID      |
-| title              | String    |
-| description        | Text      |
-| acceptanceCriteria | Text      |
-| createdAt          | Timestamp |
+### `test_cases`
 
-## Relationship
+Stores AI-generated test cases belonging to a user story.
 
-Many UserStories belong to one Project.
+| Column | Type | Constraints |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `user_story_id` | UUID | Not null; foreign key to `user_stories.id` with cascade delete |
+| `title` | VARCHAR(255) | Not null |
+| `preconditions` | TEXT | Not null |
+| `test_steps` | TEXT | Not null |
+| `expected_result` | TEXT | Not null |
+| `test_type` | VARCHAR(100) | Not null |
+| `created_at` | TIMESTAMP WITH TIME ZONE | Not null |
 
----
+An index exists on `user_story_id`. Repeated generation requests append records; the schema does not currently track generation batches or versions.
 
-# TestCase
+### `playwright_tests`
 
-Represents AI-generated test cases.
+Stores AI-generated Playwright source code belonging to a user story.
 
-## Fields
+| Column | Type | Constraints |
+| --- | --- | --- |
+| `id` | UUID | Primary key |
+| `user_story_id` | UUID | Not null; foreign key to `user_stories.id` with cascade delete |
+| `file_name` | VARCHAR(255) | Not null |
+| `script_content` | TEXT | Not null |
+| `created_at` | TIMESTAMP WITH TIME ZONE | Not null |
 
-| Field          | Type      |
-| -------------- | --------- |
-| id             | UUID      |
-| userStoryId    | UUID      |
-| title          | String    |
-| preconditions  | Text      |
-| testSteps      | Text      |
-| expectedResult | Text      |
-| testType       | String    |
-| createdAt      | Timestamp |
+An index exists on `user_story_id`.
 
-## Relationship
+These rows contain generated code only. There is no implemented execution table, execution status, report, or link to a physical `.spec.ts` file.
 
-Many TestCases belong to one UserStory.
+### `test_record`
 
----
+The first migration created `test_record` as a database-foundation scaffold:
 
-# EdgeCase
+| Column | Type | Constraints |
+| --- | --- | --- |
+| `id` | BIGSERIAL | Primary key |
+| `name` | VARCHAR(255) | Not null |
+| `result` | TEXT | Nullable |
+| `created_at` | TIMESTAMP WITH TIME ZONE | Not null; defaults to current time |
 
-Represents AI-generated edge cases.
+The matching JPA entity and repository exist, but no current service or API uses them. It should not be confused with the planned execution-result model. Removing it would require a new forward-only Flyway migration rather than editing the existing `V1` migration.
 
-## Fields
+## Planned Entities
 
-| Field       | Type      |
-| ----------- | --------- |
-| id          | UUID      |
-| userStoryId | UUID      |
-| description | Text      |
-| createdAt   | Timestamp |
+The following concepts are not implemented in the current schema:
 
-## Relationship
+### Test execution
 
-Many EdgeCases belong to one UserStory.
+Would record a run of an approved Playwright test, including status, duration, output, error details, timestamps, and runner metadata.
 
----
+### Edge-case analysis
 
-# RiskAnalysis
+Would store dedicated edge cases if they need an independent lifecycle instead of remaining part of generated test cases.
 
-Represents AI-generated risk assessments.
+### Risk analysis
 
-## Fields
+Would store identified risks, categories, severity, and explanations for a user story.
 
-| Field       | Type      |
-| ----------- | --------- |
-| id          | UUID      |
-| userStoryId | UUID      |
-| riskLevel   | String    |
-| description | Text      |
-| createdAt   | Timestamp |
+### Generated test data
 
-## Relationship
+Would store reusable generated datasets with appropriate handling for sensitive values.
 
-Many RiskAnalysis entries belong to one UserStory.
+### Identity and collaboration
 
----
+Possible later entities include users, teams, workspaces, roles, audit logs, provider configuration, and prompt templates.
 
-# PlaywrightTest
+## Migration Rules
 
-Represents generated Playwright test scripts.
-
-## Fields
-
-| Field         | Type      |
-| ------------- | --------- |
-| id            | UUID      |
-| userStoryId   | UUID      |
-| fileName      | String    |
-| scriptContent | Text      |
-| createdAt     | Timestamp |
-
-## Relationship
-
-Many PlaywrightTests belong to one UserStory.
-
----
-
-# TestExecution
-
-Represents test execution results.
-
-## Fields
-
-| Field            | Type      |
-| ---------------- | --------- |
-| id               | UUID      |
-| playwrightTestId | UUID      |
-| status           | String    |
-| executionTime    | Integer   |
-| errorMessage     | Text      |
-| executedAt       | Timestamp |
-
-## Relationship
-
-Many TestExecutions belong to one PlaywrightTest.
-
----
-
-# Future Entities
-
-The following entities may be added later:
-
-* User
-* Team
-* Workspace
-* APIKey
-* AIConversation
-* PromptTemplate
-* AuditLog
-
-These are intentionally excluded from Version 1 to keep the project manageable.
+- Add schema changes through a new versioned Flyway migration.
+- Do not modify a migration that has already been applied to a shared database.
+- Keep foreign-key columns indexed when they are used for lookup.
+- Keep JPA entities aligned with migrations because Hibernate runs in validation mode.
+- Use timestamp-with-time-zone values consistently and store application timestamps in UTC.

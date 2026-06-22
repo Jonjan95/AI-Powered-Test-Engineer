@@ -1,112 +1,64 @@
 # Quick Start
 
-This guide explains how to start and work with the AI-Powered Test Engineer project.
+This is the daily command guide for the local development environment. Complete [setup.md](setup.md) first if the repository or PostgreSQL container has not been prepared.
 
----
+## 1. Start PostgreSQL
 
-# Daily Workflow
-
-Before starting work:
-
-```bash
-git pull
-```
-
-Start required services:
-
-1. Docker Desktop
-2. PostgreSQL Container
-3. Spring Boot Backend
-4. Next.js Frontend
-
-After finishing work:
-
-```bash
-git add .
-git commit -m "description of changes"
-git push
-```
-
----
-
-# Prerequisites
-
-Installed locally:
-
-* Java 21
-* Node.js
-* Docker Desktop
-* Git
-* VS Code
-
-Verify installations:
-
-```bash
-java --version
-node --version
-docker --version
-git --version
-```
-
----
-
-# Start PostgreSQL
-
-Start Docker Desktop.
-
-Verify Docker is running:
-
-```bash
-docker ps
-```
-
-Start PostgreSQL container:
+Start Docker Desktop, then start the existing PostgreSQL 16 container:
 
 ```bash
 docker start aipowered-postgres
-```
-
-Verify container is running:
-
-```bash
 docker ps
 ```
 
-Expected container:
-
-```text
-aipowered-postgres
-```
-
----
-
-# Start Backend
-
-Navigate to backend:
+If the container does not exist yet, create it once:
 
 ```bash
-cd backend
+docker run --name aipowered-postgres -e POSTGRES_USER=aipower -e POSTGRES_PASSWORD=123 -e POSTGRES_DB=aipowered -p 5432:5432 -d postgres:16
 ```
 
-## Windows
+Useful database commands:
+
+```bash
+docker logs aipowered-postgres
+docker stop aipowered-postgres
+```
+
+## 2. Set the OpenAI Key When Needed
+
+CRUD and health requests do not require an OpenAI key. Generation requests do.
+
+PowerShell:
 
 ```powershell
+$env:OPENAI_API_KEY="your-api-key"
+```
+
+macOS or Linux:
+
+```bash
+export OPENAI_API_KEY="your-api-key"
+```
+
+See [setup.md](setup.md#environment-variables) for all supported variables.
+
+## 3. Start the Backend
+
+Windows PowerShell:
+
+```powershell
+cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-## macOS / Linux
+macOS or Linux:
 
 ```bash
+cd backend
 ./mvnw spring-boot:run
 ```
 
-Health endpoint:
-
-```text
-http://localhost:8080/api/health
-```
-
-Expected response:
+Verify `http://localhost:8080/api/health` returns:
 
 ```json
 {
@@ -115,183 +67,90 @@ Expected response:
 }
 ```
 
----
+## 4. Start the Frontend
 
-# Start Frontend
-
-Open a new terminal.
-
-Navigate to frontend:
+Open a second terminal:
 
 ```bash
 cd frontend
-```
-
-Start Next.js:
-
-```bash
+npm install
 npm run dev
 ```
 
-Open:
+Open `http://localhost:3000`.
 
-```text
-http://localhost:3000
-```
+## 5. Run Backend Tests
 
----
-
-# Running Tests
-
-Backend:
-
-```bash
-cd backend
-```
-
-Windows:
+Windows PowerShell:
 
 ```powershell
+cd backend
 .\mvnw.cmd test
 ```
 
-macOS / Linux:
+macOS or Linux:
 
 ```bash
+cd backend
 ./mvnw test
 ```
 
----
+## 6. Run Playwright Tests
 
-# Git Workflow
+Install browser binaries once:
 
-Check status:
+```bash
+cd frontend
+npx playwright install
+```
+
+Run the suite:
+
+```bash
+npx playwright test
+```
+
+Open the HTML report after a run:
+
+```bash
+npx playwright show-report
+```
+
+The current Playwright files are starter examples against `playwright.dev`; they do not exercise this application. Playwright code generated through the backend API is stored in PostgreSQL and is not automatically executed.
+
+## Daily Git Checks
+
+Before working:
 
 ```bash
 git status
-```
-
-Fetch remote changes:
-
-```bash
-git fetch
-```
-
-See incoming commits:
-
-```bash
-git log HEAD..origin/main --oneline
-```
-
-Pull latest changes:
-
-```bash
 git pull
 ```
 
-Commit work:
+After working, inspect changes before choosing what to stage and commit:
 
 ```bash
-git add .
-git commit -m "feat: description"
-git push
+git status
+git diff
 ```
 
----
+## Shutdown
 
-# Docker Commands
-
-View running containers:
-
-```bash
-docker ps
-```
-
-Start PostgreSQL:
-
-```bash
-docker start aipowered-postgres
-```
-
-Stop PostgreSQL:
+Stop frontend and backend processes with `Ctrl+C`, then stop the database:
 
 ```bash
 docker stop aipowered-postgres
 ```
 
-View logs:
-
-```bash
-docker logs aipowered-postgres
-```
-
----
-
-# First-Time Setup
-
-Only required once.
-
-Create PostgreSQL container:
-
-```bash
-docker run --name aipowered-postgres -e POSTGRES_USER=aipower -e POSTGRES_PASSWORD=123 -e POSTGRES_DB=aipowered -p 5432:5432 -d postgres:15
-```
-
-After this, use:
-
-```bash
-docker start aipowered-postgres
-```
-
-instead of creating a new container.
-
----
-
-# Shutdown
-
-Frontend:
+## Current Request Flow
 
 ```text
-Ctrl + C
+Next.js health page
+        |
+        v
+Spring Boot REST API
+        |-- PostgreSQL through Spring Data JPA and Flyway
+        `-- OpenAI API for generation requests
 ```
 
-Backend:
-
-```text
-Ctrl + C
-```
-
-Database:
-
-```bash
-docker stop aipowered-postgres
-```
-
----
-
-# Project Architecture
-
-```text
-Frontend (Next.js)
-        ↓
-Backend (Spring Boot)
-        ↓
-PostgreSQL
-        ↓
-Flyway Migrations
-```
-
----
-
-# Current Development Process
-
-1. Pick GitHub Issue
-2. Implement in Learning Mode using Codex
-3. Run tests
-4. Verify manually
-5. Commit
-6. Push
-7. Close Issue
-8. Continue with next Issue
-
-The goal is to understand every change before it is committed.
+For available routes and generation prerequisites, see [api-reference.md](api-reference.md).
