@@ -16,6 +16,9 @@ node_modules/
 # Java
 target/
 
+# TypeScript
+*.tsbuildinfo
+
 # Environment files
 .env
 .env.*

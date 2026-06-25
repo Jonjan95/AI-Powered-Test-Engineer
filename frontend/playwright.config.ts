@@ -12,6 +12,8 @@ export default defineConfig({
   use: {
     baseURL: frontendBaseUrl,
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
   projects: [
     {
