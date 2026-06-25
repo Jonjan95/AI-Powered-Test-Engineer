@@ -1,6 +1,14 @@
 # Frontend
 
-The frontend is a minimal Next.js, TypeScript, and Tailwind CSS application. The current homepage requests `GET http://localhost:8080/api/health` and displays the backend service and status values.
+The frontend is a minimal Next.js, TypeScript, and Tailwind CSS application. The homepage now provides the first project workflow: it lists projects from the backend, creates projects, selects a project, lists that project's user stories, and creates user stories.
+
+The frontend API client reads `NEXT_PUBLIC_API_BASE_URL` to decide which backend to call. If the variable is not set, it defaults to `http://localhost:8080`.
+
+Example local override:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
 
 Install dependencies and start the development server:
 
